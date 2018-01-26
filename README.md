@@ -13,8 +13,11 @@ This is a bash script, so you'll need bash installed.
 
 More importantly, you'll need the [AWS Command Line
 Interface](https://aws.amazon.com/cli/) installed and configured.
-Most mainstream package managers have access to an `awscli` package.
-If not, you can install it via Python's `pip` utility.
+This is a Python program, so you'll need Python installed to run
+it.  Most mainstream package managers have access to an `awscli`
+package.  If not, you can install it via Python's `pip` utility.
+
+## AWS CLI Configuration
 
 Unless you specify a different AWS profile, the "default" one will
 be used. Likewise, if you don't specify a region, the region
