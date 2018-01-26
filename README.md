@@ -55,7 +55,7 @@ ami-0c2aba6c	2017-04-12T00:26:24.000Z	CentOS Linux 7 x86_64 HVM EBS 1703_01
 ```
 
 ```nohighlight
-[~]$ bash ami-search -d centos7
+[~]$ bash ami-search -d centos7 -n 1 -s
 ami-02c71d7a
 ```
 
