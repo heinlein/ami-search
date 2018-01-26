@@ -118,9 +118,12 @@ TEST="[?Description != \`null\`] | [?starts_with(Description, \`$DESC\`)]"
 # By default, return 4 results. Can be overridden with -n option.
 NUM=${CLINUM:-4}
 
-# By default, return three fields of interest. Can be changed to
-# list ImageId with -s option.
+# By default, return three fields of interest: image ID, creation
+# date, and AMI description. Can be changed to list only the
+# ImageId with -s option.
 RETURN=${CLIRET:-"ImageId, CreationDate, Description"}
+
+### Finally, launch AWS query
 
 aws $AWSOPT ec2 describe-images \
   --owners $OWNER \

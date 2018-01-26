@@ -1,9 +1,14 @@
 # ami-search
-Find latest commonly used AWS machine images.
+Find the latest 64-bit HVM- and EBS-enabled Amazon Machine Images
+(AMI) available for certain OS distributions. For most distributions,
+we look for gp2 block devices. Images are returned in reverse
+chronological order, the most recent being the first listed.
 
-When I setup AWS EC2 instances for myself or for clients, I typically
+## Rationale
+
+When I launch AWS EC2 instances for myself or for clients, I typically
 fall back on just a few OS/Distribution options: Amazon Linux,
-CentOS, Ubuntu LTS, or FreeBSD. I like to use the newest image
+CentOS, Ubuntu LTS, or FreeBSD. I like to use the newest AMI
 available, so I hacked up this script to list the newest images for
 those distributions.
 
@@ -13,7 +18,7 @@ This is a bash script, so you'll need bash installed.
 
 More importantly, you'll need the [AWS Command Line
 Interface](https://aws.amazon.com/cli/) installed and configured.
-This is a Python program, so you'll need Python installed to run
+`aws` is a Python program, so you'll need Python installed to run
 it.  Most mainstream package managers have access to an `awscli`
 package.  If not, you can install it via Python's `pip` utility.
 
@@ -51,19 +56,19 @@ region-specific and change over time, so you can expect to see
 different IDs when you run the script.
 
 ```nohighlight
-[~]$ bash ami-search -d centos7
+[~]$ ./ami-search -d centos7
 ami-02c71d7a	2017-12-05T03:12:47.000Z	CentOS Linux 7 x86_64 HVM EBS 1708_11.01
 ami-51076231	2017-05-09T23:44:25.000Z	CentOS Linux 7 x86_64 HVM EBS 1704_01
 ami-0c2aba6c	2017-04-12T00:26:24.000Z	CentOS Linux 7 x86_64 HVM EBS 1703_01
 ```
 
 ```nohighlight
-[~]$ bash ami-search -d centos7 -n 1 -s
+[~]$ ./ami-search -d centos7 -n 1 -s
 ami-02c71d7a
 ```
 
 ```nohighlight
-[~]$ bash ami-search -d centos7 -r us-east-1
+[~]$ ./ami-search -d centos7 -r us-east-1
 ami-95096eef	2017-12-04T17:19:13.000Z	CentOS Linux 7 x86_64 HVM EBS 1708_11.01
 ami-d52f5bc3	2017-05-09T08:55:21.000Z	CentOS Linux 7 x86_64 HVM EBS 1704_01
 ami-ae7bfdb8	2017-04-03T20:30:19.000Z	CentOS Linux 7 x86_64 HVM EBS 1703_01
