@@ -1,0 +1,135 @@
+#!/bin/bash
+#
+# Lists, newest first, AWS machine images for certain OS distributions.
+# Script optionally takes an AWS region and/or AWS CLI profile name.
+#
+# The most fragile part of this script, I think, is setting the OWNER
+# variable. It's necessary to locate a specific distribution, but as
+# far as I can tell, owner ID numbers are not documented or published
+# officially.
+#
+# Also fragile are the DESC variables, which are free-form text and
+# could, I suppose, change at any time.
+#
+# ======================================================================
+
+# Will add profile or region options if specified on command line
+AWSOPT=""
+
+# Ordinarily we specify gp2 block devices, but that gets omitted
+# for some distros like CentOS
+XTRAFILTER="Name=block-device-mapping.volume-type,Values=gp2"
+
+# Function to print a help screen
+function showusage {
+  cat <<__EOM__
+Queries AWS for the latest 64-bit HVM- and EBS-enabled images available
+for the specified OS distribution. For most distributions, we look for
+gp2 block devices. Images are returned in reverse chronological order,
+the most recent being the first listed.
+
+usage: $(basename $0) -d distro [-n num] [-p profile] [-r region] [-s]
+
+-d specifies distribution; currently valid arguments: amazon, amazon2,
+   centos6, centos7, freebsd11, or ubuntu1604 [REQUIRED]
+-n the maximum number of results to list. Default is 4.
+-p specifies a profile in your ~/.aws/credentials file. Uses the
+   default profile if none is specified.
+-r specifies an AWS region name. The default value for the profile
+   you use is found in your ~/.aws/config file.
+-s will return only AMI image id. Default is to return image id,
+   creation date, and image description.
+__EOM__
+  exit
+}
+
+# Process command-line options
+while getopts "d:hn:p:r:s" OPT; do
+  case "$OPT" in
+    d)
+      DISTRO=$OPTARG
+      ;;
+    h)
+      showusage
+      ;;
+    n)
+      CLINUM="$OPTARG"
+      ;;
+    p)
+      AWSOPT="${AWSOPT} --profile $OPTARG"
+      ;;
+    r)
+      AWSOPT="${AWSOPT} --region $OPTARG"
+      ;;
+    s)
+      CLIRET="ImageId"
+      ;;
+    *)
+      showusage
+      ;;
+  esac
+done
+shift $((OPTIND -1))
+
+# Set distribution-specific variables
+case "$DISTRO" in
+  amazon)
+    OWNER="137112412989"
+    DESC="Amazon Linux AMI"
+    ;;
+  amazon2)
+    OWNER="137112412989"
+    DESC="Amazon Linux 2"
+    ;;
+  centos6)
+    OWNER="410186602215"
+    DESC="CentOS Linux 6"
+    XTRAFILTER=""
+    ;;
+  centos7)
+    OWNER="410186602215"
+    DESC="CentOS Linux 7"
+    XTRAFILTER=""
+    ;;
+  freebsd11)
+    OWNER="118940168514"
+    DESC="FreeBSD 11"
+    ;;
+  ubuntu1604)
+    OWNER="099720109477"
+    DESC="Canonical, Ubuntu, 16.04"
+    ;;
+  *)
+    showusage
+    ;;
+esac
+
+### Break out sections of the query for easier reading
+
+# Images are returned sorted by creation date, newest first
+SORT="reverse(sort_by(Images, &CreationDate))"
+
+# One idiosyncracy of JMESPath is that searching all results for, e.g.,
+# a certain Description will fail if even one result does not have
+# Description field. So we test that Description is not null before
+# doing the text match.
+TEST="[?Description != \`null\`] | [?starts_with(Description, \`$DESC\`)]"
+
+# By default, return 4 results. Can be overridden with -n option.
+NUM=${CLINUM:-4}
+
+# By default, return three fields of interest. Can be changed to
+# list ImageId with -s option.
+RETURN=${CLIRET:-"ImageId, CreationDate, Description"}
+
+aws $AWSOPT ec2 describe-images \
+  --owners $OWNER \
+  --output text \
+  --filters \
+      Name=architecture,Values=x86_64 \
+      Name=virtualization-type,Values=hvm \
+      Name=root-device-type,Values=ebs \
+      $XTRAFILTER \
+  --query "${SORT} | ${TEST} | [0:${NUM}].[${RETURN}]"
+
+# fini
