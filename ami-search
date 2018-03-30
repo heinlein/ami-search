@@ -20,6 +20,11 @@ AWSOPT=""
 # for some distros like CentOS
 XTRAFILTER="Name=block-device-mapping.volume-type,Values=gp2"
 
+# By default, return three fields of interest: image ID, creation
+# date, and AMI description. RHEL returns Name instead of Description.
+# Can be changed to list only the ImageId with -s option.
+STDRET="ImageId, CreationDate, Description"
+
 # Function to print a help screen
 function showusage {
   cat <<__EOM__
@@ -31,7 +36,7 @@ the most recent being the first listed.
 usage: $(basename $0) -d distro [-n num] [-p profile] [-r region] [-s]
 
 -d specifies distribution; currently valid arguments: amazon, amazon2,
-   centos6, centos7, freebsd11, or ubuntu1604 [REQUIRED]
+   centos6, centos7, freebsd11, rhel, or ubuntu1604 [REQUIRED]
 -n the maximum number of results to list. Default is 4.
 -p specifies a profile in your ~/.aws/credentials file. Uses the
    default profile if none is specified.
@@ -95,6 +100,11 @@ case "$DISTRO" in
     OWNER="118940168514"
     DESC="FreeBSD 11"
     ;;
+  rhel)
+    OWNER="309956199498"
+    DESC="Provided by Red Hat,"
+    STDRET="ImageId, CreationDate, Name"
+    ;;
   ubuntu1604)
     OWNER="099720109477"
     DESC="Canonical, Ubuntu, 16.04"
@@ -118,10 +128,8 @@ TEST="[?Description != \`null\`] | [?starts_with(Description, \`$DESC\`)]"
 # By default, return 4 results. Can be overridden with -n option.
 NUM=${CLINUM:-4}
 
-# By default, return three fields of interest: image ID, creation
-# date, and AMI description. Can be changed to list only the
-# ImageId with -s option.
-RETURN=${CLIRET:-"ImageId, CreationDate, Description"}
+# What fields will be printed to console?
+RETURN=${CLIRET:-"$STDRET"}
 
 ### Finally, launch AWS query
 
