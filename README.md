@@ -38,8 +38,9 @@ the most recent being the first listed.
 
 usage: ami-search -d distro [-n num] [-p profile] [-r region] [-s]
 
--d specifies distribution; currently valid arguments: amazon, amazon2,
-   centos6, centos7, freebsd11, rhel, or ubuntu1604 [REQUIRED]
+-d specifies distribution [REQUIRED]; currently valid arguments:
+   amazon, amazon2, centos6, centos7, freebsd11, rhel, ubuntu1604,
+   or ubuntu1804
 -n the maximum number of results to list. Default is 4.
 -p specifies a profile in your ~/.aws/credentials file. Uses the
    default profile if none is specified.
